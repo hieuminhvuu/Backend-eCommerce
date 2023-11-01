@@ -24,61 +24,39 @@ class AccessService {
     /**
      * Check this token used?
      */
-    static handleRefreshToken = async (refreshToken) => {
-        // Check this token used?
-        const foundToken = await KeyTokenService.findByRefreshTokenUsed(
-            refreshToken
-        );
-        // if yes
-        if (foundToken) {
-            // decode who is this?
-            const { userId, email } = await verifyJWT(
-                refreshToken,
-                foundToken.privateKey
-            );
-            console.log("[1]--", { userId, email });
-            // delete all token in keyStore
+    static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
+        const { userId, email } = user;
+        console.log("vcl luon", keyStore);
+        if (keyStore.refreshTokensUsed.includes(refreshToken)) {
             await KeyTokenService.deleteKeyById(userId);
             throw new ForbiddenError(
                 "Something wrong happens! Please re-login!"
             );
         }
 
-        // if no
-        const holderToken = await KeyTokenService.findByRefreshToken(
-            refreshToken
-        );
-        if (!holderToken)
-            throw new AuthFailureError("Shop not registered (001)");
-        //verifyToken
-        const { userId, email } = await verifyJWT(
-            refreshToken,
-            holderToken.privateKey
-        );
-        console.log("[2]--", { userId, email });
-        // Check UserId
-        const foundShop = await findByEmail({ email });
-        if (!foundShop) throw new AuthFailureError("Shop not registered (002");
+        if (keyStore.refreshToken !== refreshToken)
+            throw new AuthFailureError("Shop not registered (000)");
 
-        // Create new pair
+        const foundShop = await findByEmail({ email });
+        if (!foundShop) throw new AuthFailureError("Shop not registered (001)");
+
         const tokens = await createTokenPair(
             { userId, email },
-            holderToken.publicKey,
-            holderToken.privateKey
+            keyStore.publicKey,
+            keyStore.privateKey
         );
 
-        // Update token
-        await holderToken.updateOne({
+        await keyStore.updateOne({
             $set: {
                 refreshToken: tokens.refreshToken,
             },
             $addToSet: {
-                refreshTokensUsed: refreshToken, //used to get new tokens
+                refreshTokensUsed: refreshToken,
             },
         });
 
         return {
-            user: { userId, email },
+            user,
             tokens,
         };
     };
