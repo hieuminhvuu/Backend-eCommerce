@@ -26,7 +26,6 @@ class AccessService {
      */
     static handleRefreshToken = async ({ keyStore, user, refreshToken }) => {
         const { userId, email } = user;
-        console.log("vcl luon", keyStore);
         if (keyStore.refreshTokensUsed.includes(refreshToken)) {
             await KeyTokenService.deleteKeyById(userId);
             throw new ForbiddenError(
