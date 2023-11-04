@@ -13,6 +13,8 @@ const {
     publishProductByShop,
     unPublishProductByShop,
     searchProductByUser,
+    findAllProducts,
+    findProduct,
 } = require("../models/repositories/product.repo");
 
 class ProductFactory {
@@ -43,6 +45,32 @@ class ProductFactory {
         const query = { product_shop, isPublished: true };
         return await findAllPublishForShop({ query, limit, skip });
     }
+
+    static async searchProduct({ keySearch }) {
+        return await searchProductByUser({ keySearch });
+    }
+
+    static async findAllProducts({
+        limit = 50,
+        sort = "ctime",
+        page = 1,
+        filter = { isPublished: true },
+    }) {
+        return await findAllProducts({
+            limit,
+            sort,
+            filter,
+            page,
+            select: ["product_name", "product_price", "product_thumb"],
+        });
+    }
+
+    static async findProduct({ product_id }) {
+        return await findProduct({
+            product_id,
+            unSelect: ["__v", "product_variations"],
+        });
+    }
     // END QUERY //
 
     // PUT //
@@ -52,10 +80,6 @@ class ProductFactory {
 
     static async unPublishProductByShop({ product_shop, product_id }) {
         return await unPublishProductByShop({ product_shop, product_id });
-    }
-
-    static async searchProduct({ keySearch }) {
-        return await searchProductByUser({ keySearch });
     }
     // END PUT //
 }
