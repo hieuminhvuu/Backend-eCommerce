@@ -20,8 +20,8 @@ class ConflictRequestError extends ErrorResponse {
 
 class BadRequestError extends ErrorResponse {
     constructor(
-        message = ReasonPhrases.CONFLICT,
-        status = StatusCodes.FORBIDDEN
+        message = ReasonPhrases.BAD_REQUEST,
+        status = StatusCodes.BAD_REQUEST
     ) {
         super(message, status);
     }
