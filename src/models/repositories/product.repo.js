@@ -104,11 +104,35 @@ const updateProductById = async ({
     });
 };
 
-const getProductById = async ({ productId, select }) => {
+const getProductById = async (productId) => {
+    return await product
+        .findOne({ _id: convertToObjectIdMongodb(productId) })
+        .lean();
+};
+
+const getProductByIdSelect = async ({ productId, select }) => {
     return await product
         .findOne({ _id: convertToObjectIdMongodb(productId) })
         .select(getSelectData(select))
         .lean();
+};
+
+const checkProductByServer = async (products) => {
+    return await Promise.all(
+        products.map(async (product) => {
+            const foundProduct = await getProductById({
+                productId: product.productId,
+                select: ["product_name", "product_shop", "product_price"],
+            });
+            if (foundProduct) {
+                return {
+                    price: foundProduct.product_price,
+                    quantity: product.quantity,
+                    productId: product.productId,
+                };
+            }
+        })
+    );
 };
 
 module.exports = {
@@ -121,4 +145,6 @@ module.exports = {
     findProduct,
     updateProductById,
     getProductById,
+    getProductByIdSelect,
+    checkProductByServer,
 };

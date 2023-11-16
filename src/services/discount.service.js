@@ -74,7 +74,7 @@ class DiscountService {
             discount_max_value: max_value,
             discount_start_date: new Date(start_date),
             discount_end_date: new Date(end_date),
-            discount_max_users: max_uses,
+            discount_max_uses: max_uses,
             discount_uses_count: uses_count,
             discount_users_used: users_used,
             discount_shopId: shopId,
@@ -167,39 +167,42 @@ class DiscountService {
 
         const {
             discount_is_active,
-            discount_max_users,
+            discount_max_uses,
             discount_max_uses_per_user,
             discount_min_order_value,
             discount_users_used,
             discount_start_date,
             discount_end_date,
+            discount_type,
+            discount_value,
+            discount_applies_to,
         } = foundDiscount;
 
         if (!discount_is_active) throw new NotFoundError("Discount expired!");
-        if (!discount_max_users) throw new NotFoundError("Discounts were out!");
+        if (!discount_max_uses) throw new NotFoundError("Discounts were out!");
 
         if (
             new Date() < new Date(discount_start_date) ||
             new Date() > new Date(discount_end_date)
         ) {
-            throw new NotFoundError("Discount expired!");
+            throw new BadRequestError("Discount expired!");
         }
 
-        // check xem co set gia tri toi thieu khong
+        // Get total
         let totalOrder = 0;
-        if (discount_min_order_value > 0) {
-            //get total
-            totalOrder = products.reduce((acc, product) => {
-                return acc + product.quantity * product.price;
-            }, 0);
+        totalOrder = products.reduce((acc, product) => {
+            return acc + product.quantity * product.price;
+        }, 0);
 
-            if (totalOrder < discount_min_order_value) {
+        // check xem co set gia tri toi thieu khong
+        if (discount_min_order_value > 0) {
+            if (totalOrder < discount_min_order_value)
                 throw new NotFoundError(
                     `Discount require minimum order value of ${discount_min_order_value}`
                 );
-            }
         }
 
+        // Check moi user sd bnh lan
         if (discount_max_uses_per_user > 0) {
             const userDiscount = discount_users_used.find(
                 (user) => user.userId === userId
@@ -209,16 +212,32 @@ class DiscountService {
             }
         }
 
-        //check discount fixed or percentage
-        const amount =
-            discount_type === "fixed_amount"
-                ? discount_value
-                : totalOrder * (discount_value / 100);
+        // Check xem discount cho all hay cho specific
+        let amount_discount = 0;
+        if (discount_applies_to === "all") {
+            // TH1: all
+            amount_discount +=
+                discount_type === "fixed_amount"
+                    ? discount_value
+                    : totalOrder * (discount_value / 100);
+        } else {
+            // TH2: specific
+            // Check xem những product có nằm trong "discount_product_ids" không?
+            // Nếu có thì mới trừ tiền sản phẩm đó, các sản phẩm ko đc discount thì ko trừ
+            for (const p of products) {
+                if (foundDiscount.discount_product_ids.includes(p.productId)) {
+                    amount_discount +=
+                        discount_type === "fixed_amount"
+                            ? discount_value
+                            : p.price * (discount_value / 100);
+                }
+            }
+        }
 
         return {
             totalOrder,
-            discount: amount,
-            totalPrice: totalOrder - amount,
+            discount: amount_discount,
+            totalPrice: totalOrder - amount_discount,
         };
     }
 
