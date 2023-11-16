@@ -8,7 +8,7 @@ const {
     updateUserProductQuantity,
     updateUserCart_products,
 } = require("../models/repositories/cart.repo");
-const { getProductById } = require("../models/repositories/product.repo");
+const { getProductByIdSelect } = require("../models/repositories/product.repo");
 
 /**
  * Key features: Cart service
@@ -23,7 +23,7 @@ const { getProductById } = require("../models/repositories/product.repo");
 class CartService {
     static async addToCart({ userId, product = {} }) {
         const { productId } = product;
-        const foundProduct = await getProductById({
+        const foundProduct = await getProductByIdSelect({
             productId,
             select: ["product_name", "product_shop"],
         });
@@ -78,7 +78,7 @@ class CartService {
         const { productId, quantity, old_quantity } =
             shop_order_ids[0]?.item_products[0];
         // check product
-        const foundProduct = await getProductById({
+        const foundProduct = await getProductByIdSelect({
             productId,
             select: ["product_name", "product_shop"],
         });
