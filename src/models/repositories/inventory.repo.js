@@ -1,7 +1,7 @@
 "use strict";
 
 const { convertToObjectIdMongodb } = require("../../utils");
-const { inventory } = require("../inventory.model");
+const inventory = require("../inventory.model");
 const { Types } = require("mongoose");
 
 const insertInventory = async ({
