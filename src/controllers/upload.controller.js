@@ -6,6 +6,7 @@ const {
     uploadImageFromUrl,
     uploadImageFromLocal,
     uploadImagesFromLocal,
+    uploadImageFromLocalS3,
 } = require("../services/upload.service");
 
 class UploadController {
@@ -31,9 +32,21 @@ class UploadController {
         const { files } = req;
         if (!files.length) throw new BadRequestError("File missing!");
         new SuccessResponse({
-            message: "Successful upload thumb!",
+            message: "Successful upload images!",
             metadata: await uploadImagesFromLocal({
                 files,
+            }),
+        }).send(res);
+    };
+
+    // use S3
+    uploadImageFromLocalS3 = async (req, res, next) => {
+        const { file } = req;
+        if (!file) throw new BadRequestError("File missing!");
+        new SuccessResponse({
+            message: "Upload successfully use S3Client",
+            metadata: await uploadImageFromLocalS3({
+                file,
             }),
         }).send(res);
     };
