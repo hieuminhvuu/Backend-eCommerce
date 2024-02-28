@@ -7,6 +7,17 @@ const morgan = require("morgan");
 const app = express();
 const { v4: uuidv4 } = require("uuid");
 const myLogger = require("./loggers/mylogger.log");
+const cors = require("cors");
+
+// cors
+const corsOptions = {
+    origin: "http://localhost:3000",
+    method: "GET, HEAD, PUT, PATCH, POST, DELETE",
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 
 // init middlewares
 // app.use(morgan("combined")); //using when production
