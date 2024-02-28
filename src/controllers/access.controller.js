@@ -24,8 +24,9 @@ class AccessController {
     };
 
     login = async (req, res, next) => {
+        const sendData = Object.assign({ requestId: req.requestId }, req.body);
         new SuccessResponse({
-            metadata: await AccessService.login(req.body),
+            metadata: await AccessService.login(sendData),
         }).send(res);
     };
 
