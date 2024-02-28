@@ -1,11 +1,23 @@
 "use strict";
 
 const { StatusCodes, ReasonPhrases } = require("../utils/httpStatusCode");
+const myLogger = require("../loggers/mylogger.log");
+const { logger } = require("../loggers/winston");
 
 class ErrorResponse extends Error {
     constructor(message, status) {
         super(message);
         this.status = status;
+
+        // log the error using winston
+        logger.error(`${this.status} - ${this.message}`);
+
+        // custom
+        myLogger.error(this.message, [
+            "/api/v1/???",
+            "vvmmhh234234",
+            { error: "error ??????" },
+        ]);
     }
 }
 
