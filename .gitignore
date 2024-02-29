@@ -4,3 +4,5 @@
 /src/aws
 /src/logs
 /logs
+logs/
+.DS_Store
