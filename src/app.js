@@ -44,6 +44,10 @@ app.use((req, res, next) => {
     next();
 });
 
+// init swagger
+const { openApi, configSwagger } = require("./configs/swagger.config");
+openApi(app);
+
 // init db
 require("./dbs/init.mongodb");
 
